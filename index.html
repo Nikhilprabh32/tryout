@@ -6,7 +6,10 @@
 <title>Valentine 💖</title>
 
 <style>
-  * { box-sizing: border-box; font-family: Arial, sans-serif; }
+  * {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
 
   body {
     margin: 0;
@@ -29,23 +32,40 @@
     display: none;
   }
 
-  .card.active { display: block; }
+  .card.active {
+    display: block;
+    animation: pop 0.4s ease;
+  }
 
-  h1 { color: #ff6b9d; }
-  p { color: #555; font-size: 1.2em; }
+  @keyframes pop {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  h1 {
+    color: #ff6b9d;
+    margin-bottom: 15px;
+  }
+
+  p {
+    color: #555;
+    font-size: 1.2em;
+    margin-bottom: 25px;
+  }
 
   .buttons {
     display: flex;
     justify-content: center;
     gap: 20px;
     flex-wrap: wrap;
+    position: relative;
   }
 
   button {
     padding: 15px 35px;
+    font-size: 1.1em;
     border: none;
     border-radius: 50px;
-    font-size: 1.1em;
     cursor: pointer;
     font-weight: bold;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -61,16 +81,64 @@
     color: white;
   }
 
+  .pulse {
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
   .image-box {
     width: 100%;
-    height: 240px;
+    height: 250px;
     background: #f3f3f3;
     border-radius: 20px;
-    margin: 20px 0;
+    margin: 20px 0 30px;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     color: #999;
+  }
+
+  .celebration {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.95);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+
+  .celebration.active {
+    display: flex;
+  }
+
+  .celebration h2 {
+    font-size: 4em;
+    color: #ff6b9d;
+    animation: bounce 1s infinite;
+  }
+
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .heart {
+    position: fixed;
+    font-size: 28px;
+    animation: fall 4s linear forwards;
+    pointer-events: none;
+  }
+
+  @keyframes fall {
+    from { top: -10%; opacity: 1; }
+    to { top: 110%; opacity: 0; }
   }
 
   /* SAD LEAVE OVERLAY */
@@ -86,7 +154,9 @@
     text-align: center;
   }
 
-  .leave-warning.active { display: flex; }
+  .leave-warning.active { 
+    display: flex; 
+  }
 
   .leave-warning h2 {
     font-size: 2.5em;
@@ -114,30 +184,105 @@
 
 <body>
 
+<!-- INTRO -->
+<div class="card active" id="intro">
+  <h1>Hey <span style="color:#667eea;">Name</span> 💌</h1>
+  <p>Got a special date coming up…<br>I wanted to ask you something</p>
+  <div class="buttons">
+    <button class="yes" id="okBtn">Okay 💕</button>
+    <button class="no" id="notBtn">Not interested 😐</button>
+  </div>
+</div>
+
+<!-- ARE YOU SURE -->
+<div class="card" id="sure">
+  <h1>Are you sure? 😳</h1>
+  <p>This decision might be final…</p>
+  <div class="buttons">
+    <button class="no pulse" id="sureBtn">Yes, I'm sure </button>
+    <button class="yes" id="fineBtn">Fine, I'm interested</button>
+  </div>
+</div>
+
 <!-- VALENTINE -->
-<div class="card active" id="valentine">
+<div class="card" id="valentine">
   <h1>Will you be my Valentine? 💕</h1>
 
-  <div class="image-box">📸 Put our picture here</div>
+  <div class="image-box">
+    📸
+  </div>
 
   <div class="buttons">
-    <button class="yes">Yes 💖</button>
-    <button class="no" id="noBtn">No 😢</button>
+    <button class="yes" id="yesBtn">Yes 💖</button>
+    <button class="no" id="noBtn">Nah 😢</button>
   </div>
+</div>
+
+<!-- CELEBRATION -->
+<div class="celebration" id="celebration">
+  <h2>Yesss!!! 💖🎉</h2>
+  <p>Can't wait <3 </p>
 </div>
 
 <!-- SAD EXIT OVERLAY -->
 <div class="leave-warning" id="leaveWarning">
   <div class="sad">😢</div>
   <h2>Damn…</h2>
-  <p>you seriously closing me?</p>
+  <p>you really about to close me?</p>
   <p style="margin-top:10px;">that hurts.</p>
 </div>
 
 <script>
+  const intro = document.getElementById("intro");
+  const sure = document.getElementById("sure");
+  const valentine = document.getElementById("valentine");
+  const celebration = document.getElementById("celebration");
   const leaveWarning = document.getElementById("leaveWarning");
 
-  // REAL browser exit warning (generic)
+  const show = (el) => {
+    intro.classList.remove("active");
+    sure.classList.remove("active");
+    valentine.classList.remove("active");
+    el.classList.add("active");
+  };
+
+  document.getElementById("okBtn").onclick = () => show(valentine);
+  document.getElementById("notBtn").onclick = () => show(sure);
+  document.getElementById("fineBtn").onclick = () => show(valentine);
+
+  document.getElementById("sureBtn").onclick = () => {
+    show(sure); // infinite loop
+  };
+
+  // RUNAWAY NO BUTTON (STABLE VERSION)
+  const noBtn = document.getElementById("noBtn");
+
+  noBtn.addEventListener("mouseenter", () => {
+    const padding = 80;
+    const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+    const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+
+    noBtn.style.position = "fixed";
+    noBtn.style.left = Math.random() * maxX + "px";
+    noBtn.style.top = Math.random() * maxY + "px";
+  });
+
+  // YES CELEBRATION
+  document.getElementById("yesBtn").onclick = () => {
+    celebration.classList.add("active");
+    for (let i = 0; i < 40; i++) {
+      setTimeout(() => {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.textContent = "💖";
+        heart.style.left = Math.random() * 100 + "%";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 4000);
+      }, i * 100);
+    }
+  };
+
+  // BROWSER EXIT WARNING (generic message)
   window.addEventListener("beforeunload", (e) => {
     e.preventDefault();
     e.returnValue = "";
@@ -154,18 +299,7 @@
   document.addEventListener("mouseenter", () => {
     leaveWarning.classList.remove("active");
   });
-
-  // Runaway No button
-  const noBtn = document.getElementById("noBtn");
-  noBtn.addEventListener("mouseenter", () => {
-    const maxX = window.innerWidth - 120;
-    const maxY = window.innerHeight - 60;
-    noBtn.style.position = "fixed";
-    noBtn.style.left = Math.random() * maxX + "px";
-    noBtn.style.top = Math.random() * maxY + "px";
-  });
 </script>
 
 </body>
 </html>
-
